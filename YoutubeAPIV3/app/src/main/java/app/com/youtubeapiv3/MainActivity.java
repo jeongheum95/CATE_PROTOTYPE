@@ -97,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_logout :// 로그아웃 버튼
                 Snackbar.make(toolbar,"Logout menu pressed",Snackbar.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
                 return true;
 
         }
