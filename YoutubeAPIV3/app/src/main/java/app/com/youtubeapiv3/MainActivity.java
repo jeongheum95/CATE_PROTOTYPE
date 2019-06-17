@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout = null;
     private ViewPager viewPager = null;
     private Toolbar toolbar = null;
+    public String category,channel;
     TextView txtResult;
     public String GOOGLE_YOUTUBE_API_KEY = "AIzaSyDDNXQW5vUsBy91h_swoSAc_uFFAG14Clo";  //here you should use your api key for testing purpose you can use this api also
     public String CHANNEL_ID = "UCEgdi0XIXXZ-qJOFPf4JSKw";  //here you should use your channel id for testing purpose you can use this api also
@@ -29,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent=getIntent();
+        category=intent.getStringExtra("Category");
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

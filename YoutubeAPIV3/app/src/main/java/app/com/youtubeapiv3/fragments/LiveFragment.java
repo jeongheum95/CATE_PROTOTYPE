@@ -38,8 +38,8 @@ import app.com.youtubeapiv3.models.YoutubeDataModel;
 public class LiveFragment extends Fragment {
 
     private static String GOOGLE_YOUTUBE_API_KEY = "AIzaSyDDNXQW5vUsBy91h_swoSAc_uFFAG14Clo";  //here you should use your api key for testing purpose you can use this api also
-    private static String CHANNEL_ID = "UCoMdktPbSTixAyNGwb-UYkQ";  //here you should use your channel id for testing purpose you can use this api also
-    private static String CHANNLE_GET_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&channelId=" + CHANNEL_ID + "&eventType=live&maxResults=20&key=" + GOOGLE_YOUTUBE_API_KEY + "";
+    private static String CHANNEL_ID = "PLU12uITxBEPGpEPrYAxJvNDP6Ugx2jmUx";  //here you should use your channel id for testing purpose you can use this api also
+    private static String CHANNLE_GET_URL = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=" + CHANNEL_ID + "&eventType=live&maxResults=20&key=" + GOOGLE_YOUTUBE_API_KEY + "";
 
 
     private RecyclerView mList_videos = null;
@@ -127,31 +127,31 @@ public class LiveFragment extends Fragment {
                 JSONArray jsonArray = jsonObject.getJSONArray("items");
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject json = jsonArray.getJSONObject(i);
-                    if (json.has("id")) {
-                        JSONObject jsonID = json.getJSONObject("id");
-                        String video_id = "";
-                        if (jsonID.has("videoId")) {
-                            video_id = jsonID.getString("videoId");
-                        }
-                        if (jsonID.has("kind")) {
-                            if (jsonID.getString("kind").equals("youtube#video")) {
-                                YoutubeDataModel youtubeObject = new YoutubeDataModel();
-                                JSONObject jsonSnippet = json.getJSONObject("snippet");
-                                String title = jsonSnippet.getString("title");
-                                String description = jsonSnippet.getString("description");
-                                String publishedAt = jsonSnippet.getString("publishedAt");
-                                String thumbnail = jsonSnippet.getJSONObject("thumbnails").getJSONObject("high").getString("url");
-
-                                youtubeObject.setTitle(title);
-                                youtubeObject.setDescription(description);
-                                youtubeObject.setPublishedAt(publishedAt);
-                                youtubeObject.setThumbnail(thumbnail);
-                                youtubeObject.setVideo_id(video_id);
-                                mList.add(youtubeObject);
+                    if (json.has("kind")) {
+                        if (json.getString("kind").equals("youtube#playlistItem")) {
+                            YoutubeDataModel youtubeObject = new YoutubeDataModel();
+                            JSONObject jsonSnippet = json.getJSONObject("snippet");
+                            String video_id = "";
+                            if (jsonSnippet.has("resourceId")) {
+                                JSONObject jsonResource = jsonSnippet.getJSONObject("resourceId");
+                                video_id = jsonResource.getString("videoId");
 
                             }
+                            String title = jsonSnippet.getString("title");
+                            String description = jsonSnippet.getString("description");
+                            String publishedAt = jsonSnippet.getString("publishedAt");
+                            String thumbnail = jsonSnippet.getJSONObject("thumbnails").getJSONObject("high").getString("url");
+
+                            youtubeObject.setTitle(title);
+                            youtubeObject.setDescription(description);
+                            youtubeObject.setPublishedAt(publishedAt);
+                            youtubeObject.setThumbnail(thumbnail);
+                            youtubeObject.setVideo_id(video_id);
+                            mList.add(youtubeObject);
+
                         }
                     }
+
 
                 }
             } catch (JSONException e) {

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -29,8 +31,10 @@ import java.util.ArrayList;
 import app.com.youtubeapiv3.DetailsActivity;
 import app.com.youtubeapiv3.MainActivity;
 import app.com.youtubeapiv3.R;
+import app.com.youtubeapiv3.adapters.CategoryAdapter;
 import app.com.youtubeapiv3.adapters.VideoPostAdapter;
 import app.com.youtubeapiv3.interfaces.OnItemClickListener;
+import app.com.youtubeapiv3.models.CategoryModel;
 import app.com.youtubeapiv3.models.YoutubeDataModel;
 
 /**
@@ -39,28 +43,56 @@ import app.com.youtubeapiv3.models.YoutubeDataModel;
 public class PlayListFragment extends Fragment {
 
     public String GOOGLE_YOUTUBE_API_KEY = "AIzaSyDDNXQW5vUsBy91h_swoSAc_uFFAG14Clo";//here you should use your api key for testing purpose you can use this api also
-
     public String PLAYLIST_ID = "PLHRoF1XPhCHXQhWkViQveuVa-k6P8_aD2";//here you should use your playlist id for testing purpose you can use this api also
     public String PLAYLIST_GET_URL = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=" + PLAYLIST_ID + "&maxResults=20&key=" + GOOGLE_YOUTUBE_API_KEY + "";
 
     private RecyclerView mList_videos = null;
     private VideoPostAdapter adapter = null;
     private ArrayList<YoutubeDataModel> mListData = new ArrayList<>();
+    String cateName, cateDetail, video_id;
+
 
     public MainActivity mainActivity;
+
     public PlayListFragment() {
         // Required empty public constructor
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
-        mainActivity = (MainActivity)getActivity();
+        mainActivity = (MainActivity) getActivity();
         PLAYLIST_GET_URL = mainActivity.PLAYLIST_GET_URL;
         mList_videos = (RecyclerView) view.findViewById(R.id.mList_videos);
         initList(mListData);
-        new RequestYoutubeAPI().execute();
+
+        try {
+            //intent로 값을 가져옵니다 이때 JSONObject타입으로 가져옵니다
+            JSONObject jsonObject = new JSONObject(mainActivity.channel);
+
+            //List.php 웹페이지에서 response라는 변수명으로 JSON 배열을 만들었음..
+            JSONArray jsonArray = jsonObject.getJSONArray("response");
+            int count = 0;
+
+            while (count < jsonArray.length()) {
+
+                JSONObject object = jsonArray.getJSONObject(count);
+
+                cateName = object.getString("title");
+                cateDetail = object.getString("url");
+                video_id = cateDetail.substring(cateDetail.indexOf("=") + 1);
+                new RequestVideoThumbnail().execute();
+                count++;
+            }
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+        }
+
+
+        //new RequestYoutubeAPI().execute();
         return view;
     }
 
@@ -79,6 +111,76 @@ public class PlayListFragment extends Fragment {
         mList_videos.setAdapter(adapter);
 
     }
+
+
+    //동영상 썸네일 주소 받아오기
+    private class RequestVideoThumbnail extends AsyncTask<Void, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            //String THUMBNAIL_GET_URL = "https://www.googleapis.com/youtube/v3/videos?key=" + GOOGLE_YOUTUBE_API_KEY + "&part=snippet&id=" + video_id;
+            String THUMBNAIL_GET_URL = "https://www.googleapis.com/youtube/v3/videos?key=AIzaSyDEBonEwRKGBCXdaSEn-M9z_yW17GuQUL8&part=snippet&id=" + video_id;
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(THUMBNAIL_GET_URL);
+            Log.e("URL", THUMBNAIL_GET_URL);
+            try {
+                HttpResponse response = httpClient.execute(httpGet);
+                HttpEntity httpEntity = response.getEntity();
+                String json = EntityUtils.toString(httpEntity);
+                return json;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String response) {
+            super.onPostExecute(response);
+
+            /*if (response != null) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    Log.e("response", jsonObject.toString());
+                    JSONArray jsonArray = jsonObject.getJSONArray("items");
+                    JSONObject json = jsonArray.getJSONObject(0);
+                    JSONObject jsonSnippet = json.getJSONObject("snippet");
+                    String thumbnail = jsonSnippet.getJSONObject("thumbnails").getJSONObject("high").getString("url");
+                    //String thumbnail = "https://i.ytimg.com/vi/dn9g1v4Sht0/hqdefault.jpg";
+
+                    YoutubeDataModel youtubeObject = new YoutubeDataModel();
+                    youtubeObject.setTitle(cateName);
+                    youtubeObject.setThumbnail(thumbnail);
+                    youtubeObject.setVideo_id(video_id);
+                    mListData.add(youtubeObject);
+
+                    initList(mListData);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }*/
+
+            //API 키 만료됐을 때
+            String thumbnail = "https://i.ytimg.com/vi/dn9g1v4Sht0/hqdefault.jpg";
+
+            YoutubeDataModel youtubeObject = new YoutubeDataModel();
+            youtubeObject.setTitle(cateName);
+            youtubeObject.setThumbnail(thumbnail);
+            youtubeObject.setVideo_id(video_id);
+
+            mListData.add(youtubeObject);
+
+            initList(mListData);
+        }
+
+    }
+
+
+
 
 
     //create an asynctask to get all the data from youtube
@@ -165,6 +267,4 @@ public class PlayListFragment extends Fragment {
         return mList;
 
     }
-
-
 }

@@ -65,38 +65,34 @@ public class LoginActivity extends AppCompatActivity {
         loginbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new UserofPcroom().execute(idText.getText().toString());
+                new UserofPcroom().execute();
             }
         });
 
     }
 
-     public class UserofPcroom extends AsyncTask<String, Void, String> {
+    public class UserofPcroom extends AsyncTask<Void, Void, String> {
         String target;
 
         @Override
         protected void onPreExecute() {
             //List.php은 파싱으로 가져올 웹페이지
-            target = "https://catapro.000webhostapp.com/fow_login.php";
+            target = "https://catapro.000webhostapp.com/fow_tag.php";
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected String doInBackground(Void... params) {
 
             try {
-                String Id = (String) params[0];
 
                 URL url = new URL(target);//URL 객체 생성
 
-                String data = URLEncoder.encode("Id", "UTF-8") + "=" + URLEncoder.encode(Id, "UTF-8");
                 //URL을 이용해서 웹페이지에 연결하는 부분
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setDoOutput(true);
 
                 OutputStreamWriter wr = new OutputStreamWriter(httpURLConnection.getOutputStream());
 
-                wr.write(data);
-                wr.flush();
 
                 //바이트단위 입력스트림 생성 소스는 httpURLConnection
                 InputStream inputStream = httpURLConnection.getInputStream();
@@ -161,8 +157,7 @@ public class LoginActivity extends AppCompatActivity {
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.putExtra("userID", userID);
                             intent.putExtra("userName", userName);
-                            intent.putExtra("userPC", result);
-                            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                            intent.putExtra("Category", result);
 
                             LoginActivity.this.startActivity(intent);
                             finish();

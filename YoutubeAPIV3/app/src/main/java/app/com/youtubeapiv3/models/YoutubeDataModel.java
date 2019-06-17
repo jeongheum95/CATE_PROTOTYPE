@@ -62,8 +62,8 @@ public class YoutubeDataModel implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(title);
-        dest.writeString(description);
-        dest.writeString(publishedAt);
+        //dest.writeString(description);
+        //dest.writeString(publishedAt);
         dest.writeString(thumbnail);
         dest.writeString(video_id);
     }
@@ -80,8 +80,8 @@ public class YoutubeDataModel implements Parcelable {
 
     public void readFromParcel(Parcel in) {
         this.title = in.readString();
-        this.description = in.readString();
-        this.publishedAt = in.readString();
+        //this.description = in.readString();
+        //this.publishedAt = in.readString();
         this.thumbnail = in.readString();
         this.video_id = in.readString();
 
